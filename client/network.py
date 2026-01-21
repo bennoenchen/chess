@@ -2,61 +2,59 @@ import socket
 import threading
 
 class NetworkClient:
-    def __init__(self, username, host="localhost", port=5000):
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.connect((host, port))
-        print(f"CLIENT Connected to {host}:{port}")
-        self.sock.sendall(f"HELLO {username}\n".encode())
-        print(f"CLIENT Logged in as {username}")
+  def __init__(self, username, host="localhost", port=5000):
+    self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    self.sock.connect((host, port))
+    print(f"CLIENT Connected to {host}:{port}")
+    self.sock.sendall(f"HELLO {username}\n".encode())
+    print(f"CLIENT Logged in as {username}")
 
-        self.running = True
-        self.recv_thread = threading.Thread(target=self.receive_loop, daemon=True)
-        self.recv_thread.start()
+    self.running = True
+    self.recv_thread = threading.Thread(target=self.receive_loop, daemon=True)
+    self.recv_thread.start()
 
-    def receive_loop(self):
-        while self.running:
-            try:
-                data = self.sock.recv(4096)
-                if not data:
-                    break
-                print(data.decode().strip())
-            except Exception:
-                break
-        # läuft hier, wenn die Schleife beendet wurde
-        print("CLIENT Server disconnected")
-        self.running = False
+  def receive_loop(self):
+    while self.running:
+      try:
+        data = self.sock.recv(4096)
+        if not data:
+            break
+        print(data.decode().strip())
+      except Exception:
+        break
+    print("CLIENT Server disconnected")
+    self.running = False
 
-    def send(self, msg: str):
-        try:
-            self.sock.sendall((msg + "\n").encode())
-        except Exception as e:
-            print("CLIENT send error:", e)
-            self.running = False
+  def send(self, msg: str):
+    try:
+      self.sock.sendall((msg + "\n").encode())
+    except Exception as e:
+      print("CLIENT send error:", e)
+      self.running = False
 
-    def close(self):
-        # signalisieren, dass wir schließen, bevor Socket geschlossen wird
-        self.running = False
-        try:
-            self.sock.close()
-        except Exception:
-            pass
-        print("CLIENT Closed")
+  def close(self):
+    self.running = False
+    try:
+      self.sock.close()
+    except Exception:
+      pass
+    print("CLIENT Closed")
 
 
 if __name__ == "__main__":
-    username = input("Username: ")
-    client = NetworkClient(username)
+  username = input("Username: ")
+  client = NetworkClient(username)
 
-    try:
-        while True:
-            try:
-                msg = input()
-            except EOFError:
-                break
-            if msg == "":
-                break
-            client.send(msg)
-    except KeyboardInterrupt:
-        print("\nCLIENT KeyboardInterrupt")
-    finally:
-        client.close()
+  try:
+    while True:
+      try:
+        msg = input()
+      except EOFError:
+        break
+      if msg == "":
+        break
+      client.send(msg)
+  except KeyboardInterrupt:
+    print("\nCLIENT KeyboardInterrupt")
+  finally:
+    client.close()

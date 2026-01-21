@@ -1,7 +1,7 @@
 import socket
 import threading
 
-class NetworkClient():
+class NetworkClient:
   def __init__(self, username, host="localhost", port=5000):
     self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     self.sock.connect((host, port))
@@ -28,8 +28,6 @@ class NetworkClient():
     print("CLIENT Server disconnected")
     self.running = False
 
-
-
   def send(self, msg: str):
     self.sock.sendall((msg + "\n").encode())
 
@@ -40,10 +38,9 @@ class NetworkClient():
     except:
       pass
     print("CLIENT Closed")
-    
 
 if __name__ == "__main__":
-  username = input("Username:")
+  username = input("Username: ")
   client = NetworkClient(username)
 
   try:

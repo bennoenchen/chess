@@ -1,44 +1,50 @@
 import socket
 import threading
 
-class NetworkServer():
+class NetworkServer:
   def __init__(self, host="localhost", port=5000):
     self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    self.sock.bind((host,port))
+    self.sock.bind((host, port))
     self.sock.listen()
     self.clients = {}
     self.lock = threading.Lock()
     print("SERVER Up")
-    
-  def start(self):  
+
+  def start(self): 
     print("SERVER Waiting for connection")
     threading.Thread(
       target=self.server_input_loop,
       daemon=True
     ).start()
-    while True:
-      conn, addr = self.sock.accept()
-      print(f"SERVER Client connected: {addr}")
-      thread = threading.Thread(
-        target=self.handle_client,
-        args=(conn, addr),
-        daemon=True
-      )
-      thread.start()
+    try:
+      while True:
+        conn, addr = self.sock.accept()
+        print(f"SERVER Client connected: {addr}")
+        thread = threading.Thread(
+          target=self.handle_client,
+          args=(conn, addr),
+          daemon=True
+        )
+        thread.start()
+    except KeyboardInterrupt:
+      print("SERVER KeyboardInterrupt, closing")
+      self.close()
 
   def handle_client(self, conn, addr):
     name = None
     try:
       data = conn.recv(4096)
       if not data:
+        conn.close()
         return
       
       hello = data.decode().strip().split(maxsplit=1)
-      if hello[0] != "HELLO" or len(hello) != 2:
+      if hello[0] != "HELLO" or len(hello) < 2:
         conn.sendall(b"ERROR Invalid HELLO\n")
+        conn.close()
         return
-      
+
       requested_name = hello[1]
 
       with self.lock:
@@ -46,8 +52,10 @@ class NetworkServer():
           conn.sendall(b"ERROR Name already taken\n")
           conn.close()
           return
+
+        self.clients[requested_name] = conn
         name = requested_name
-        self.clients[name] = conn
+        
 
         print(f"SERVER Client '{name}' connected from {addr}")
         self.broadcast(f"SERVER {name} joined")
@@ -77,7 +85,7 @@ class NetworkServer():
             return cmd, parts[:1]
             
 
-    except ConnectionResetError:
+    except:
       pass
     finally:
       if name:
@@ -112,11 +120,11 @@ class NetworkServer():
   def send_to(self, name: str, msg: str):
     with self.lock:
       client = self.clients.get(name)
-      if client:
-        try:
-          client.sendall((msg + "\n").encode())
-        except Exception:
-          pass
+    if client:
+      try:
+        client.sendall((msg + "\n").encode())
+      except Exception:
+        pass
 
   def close(self):
     print("SERVER Closed")
@@ -124,11 +132,11 @@ class NetworkServer():
       items = list(self.clients.values())
       self.clients.clear()
     for c in items:
-      try: 
+      try:
         c.close()
-      except: 
+      except:
         pass
-    try: 
+    try:
       self.sock.close()
     except:
       pass

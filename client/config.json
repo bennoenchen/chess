@@ -1,0 +1,12 @@
+{
+  "server": {
+    "username": "Player",
+    "host": "localhost",
+    "port": 5000
+  },
+  "resolution": {
+    "screenwidth": 800,
+    "screenheight": 800
+  },
+  "audio": 1.0
+}

@@ -1,5 +1,6 @@
 from game import Game
 from network import NetworkClient
+from protocol import ProtoclHandler
 
 def main():
   addr, port, username = "localhost", 5000, "Player"
@@ -8,8 +9,10 @@ def main():
   username = input("Username: ")
   
   
-  net = NetworkClient(addr, port)
+  net = NetworkClient(addr, port, username)
+  protcol = ProtocolHandler(net)
   game = Game()
 
 if __name__ == "__main__":
   main = main()
+

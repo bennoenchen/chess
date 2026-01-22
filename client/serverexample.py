@@ -52,38 +52,34 @@ class NetworkServer:
           conn.sendall(b"ERROR Name already taken\n")
           conn.close()
           return
+          self.clients[requested_name] = conn
+      
+      name = requested_name
+      print(f"SERVER Client '{name}' connected from {addr}")
+      self.broadcast(f"SERVER {name} joined")
 
-        self.clients[requested_name] = conn
-        name = requested_name
+      while True:
+        data = conn.recv(4096)
+        if not data:
+          break
+
+        msg = data.decode(errors="replace").strip()
+        print(f"{name} {msg}")
         
+        parts = msg.split(maxsplit=1)
+        cmd = parts[0].upper()
 
-        print(f"SERVER Client '{name}' connected from {addr}")
-        self.broadcast(f"SERVER {name} joined")
-
-        while True:
-          data = conn.recv(4096)
-          if not data:
-            break
-
-          msg = data.decode().strip()
-          print(f"{name} {msg}")
-          
-          parts = msg.split(maxsplit=1)
-          cmd = parts[0].upper()
-
-          if cmd == "MSG" and len(parts) == 2:
-            self.broadcast(f"{name}: {parts[1]}")
-          elif cmd == "TO" and len(parts) == 2:
-            to_parts = parts[1].split(maxsplit=1)
-            if len(to_parts) == 2:
-              target, body = to_parts
-              self.send_to(target, f"{name} (private): {body}")
-            else:
-              conn.sendall(b"ERROR TO requires target and message\n")
-          elif cmd in ["OK","HELLO","USERNAME","HOLD","MOVE","ACCEPT","DENY","DRAW","DISCONNECT","GAMEEND"]:
-            print(f"{name} called {cmd}")
-            return cmd, parts[:1]
-            
+        if cmd == "MSG" and len(parts) == 2:
+          self.broadcast(f"{name}: {parts[1]}")
+        elif cmd == "TO" and len(parts) == 2:
+          to_parts = parts[1].split(maxsplit=1)
+          if len(to_parts) == 2:
+            target, body = to_parts
+            self.send_to(target, f"{name} (private): {body}")
+          else:
+            conn.sendall(b"ERROR TO requires target and message\n")
+        elif cmd in ["OK","HELLO","USERNAME","HOLD","MOVE","ACCEPT","DENY","DRAW","DISCONNECT","GAMEEND"]:
+          print(f"{name} called {cmd}")
 
     except:
       pass
@@ -119,8 +115,8 @@ class NetworkServer:
           
   def send_to(self, name: str, msg: str):
     with self.lock:
-      client = self.clients.get(name)
-    if client:
+      items = list(self.clients.items())
+    for name, client in items:
       try:
         client.sendall((msg + "\n").encode())
       except Exception:

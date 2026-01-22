@@ -7,8 +7,7 @@
 
 ## Client commands:
 OK //general acceptance of data  
-HELLO //initialization of connection  
-USERNAME //send username  
+HELLO [username] //initialization of connection
 HOLD //tells the server to wait until player sends answer  
 MOVE [move coordinates] //sends move request (for coordinates see below)  
 [ACCEPT / DENY] //for draw request  
@@ -17,21 +16,18 @@ DISCONNECT //disconnects. If not after GAMEEND, server disconnects other player 
 
 ## Server commands:
 OK  
-HELLO  
-ROLE [WHITE/BLACK] //assigns the role  
+ROLE [ WHITE / BLACK ] //assigns the role  
 HOLD  
 STARTGAME //starts the game  
 YOURMOVE //its your move, results in player holding until user inputs move or draw  
 BOARD [board layout] //sends the current board as a 8x8 matrix (see below)  
+INVALID [reason] //for an invalid move
 DRAW //draw request from other player  
 GAMEEND [ WHITE / BLACK / DRAW ]  
 DISCONNECT //disconnects the game  
 
 ## init:
-Client: HELLO //initialize handshake  
-Server: HELLO //confirm handshake  
-Client: USERNAME [Username] //send username  
-Server: OK  
+Client: HELLO [username] //initialize handshake  
 Server: ROLE [WHITE/BLACK] //confirm username and decide whether player is white or black (if player 1 -> white, if player 2 -> black)  
 Client: OK  
 
@@ -41,13 +37,13 @@ SERVER: HOLD //waiting, until player 2 is ready or, if user is player, 2 until s
 ## player 2 joined:
 Server: STARTGAME //start the game  
 Client: OK //confirm (still awake)  
-Server: BOARD [Board layout, eg. 0010121320212223 … ] //send initial board layout  
+Server: BOARD [board layout, eg. 0010121320212223 … ] //send initial board layout  
 Client: OK  
 
 ## your move:
 Server: YOURMOVE //it’s your move  
 Client: OK //waiting until player inputs move  
-Client: MOVE [Move operation, eg. MOVE 32 TO 34 ] //player inputted coordinate x to coordinate y  
+Client: MOVE [move operation, eg. 32 TO 34 ] //player inputted coordinate x to coordinate y  
 Server: [ OK / INVALID ] //either confirms the move or invalidates (if invalid return to YOURMOVE)  
 Server: BOARD //sends the updated board  
 Client: OK //confirms the board  
@@ -55,7 +51,7 @@ Client: OK //confirms the board
 ## your move (decide to send draw request):
 Client: DRAW  
 Server: HOLD //sends draw request to other player and asks for draw accept  
-Server [YOURMOVE (denied draw request) / GAMEEND DRAW (accepted draw request) ]  
+Server [ YOURMOVE (denied draw request) / GAMEEND DRAW (accepted draw request) ]  
 
 ## enemy move:
 Server: HOLD  
@@ -69,7 +65,7 @@ Client: [ DENY / ACCEPT ]
 Server: [ GAMEEND (if accepted) / HOLD (if denied) ]  
 
 ## game end:
-Server: GAMEEND [WHITE/BLACK/DRAW] //the game ended with either white or black winning  
+Server: GAMEEND [ WHITE /BLACK /DRAW ] //the game ended with either white or black winning  
 Client: OK //confirm the game end  
 Server: DISCONNECT  
 Client: DISCONNECT  

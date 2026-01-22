@@ -8,16 +8,16 @@
 ## Client commands:
 OK //general acceptance of data  
 HELLO [username] //initialization of connection
-HOLD //tells the server to wait until player sends answer  
+HOLD //tells the server to wait until player sends answer, server should hold completely  
 MOVE [move coordinates] //sends move request (for coordinates see below)  
-[ACCEPT / DENY] //for draw request  
+[ ACCEPT / DENY ] //for draw request  
 DRAW //requests draw  
 DISCONNECT //disconnects. If not after GAMEEND, server disconnects other player automatically
 
 ## Server commands:
 OK  
 ROLE [ WHITE / BLACK ] //assigns the role  
-HOLD  
+HOLD //client should actually completely hold until next command  
 STARTGAME //starts the game  
 YOURMOVE //its your move, results in player holding until user inputs move or draw  
 BOARD [board layout] //sends the current board as a 8x8 matrix (see below)  
@@ -28,7 +28,7 @@ DISCONNECT //disconnects the game
 
 ## init:
 Client: HELLO [username] //initialize handshake  
-Server: ROLE [WHITE/BLACK] //confirm username and decide whether player is white or black (if player 1 -> white, if player 2 -> black)  
+Server: ROLE [ WHITE / BLACK ] //confirm username and decide whether player is white or black (if player 1 -> white, if player 2 -> black)  
 Client: OK  
 
 ## waiting:
@@ -67,7 +67,8 @@ Server: [ GAMEEND (if accepted) / HOLD (if denied) ]
 ## game end:
 Server: GAMEEND [ WHITE /BLACK /DRAW ] //the game ended with either white or black winning  
 Client: OK //confirm the game end  
-Server: DISCONNECT  
+
+## client disconnects:
 Client: DISCONNECT  
 //connection closed
 

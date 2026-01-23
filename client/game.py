@@ -13,7 +13,7 @@ class Game:
     self.resolution = self.settings.data["resolution"]
     self.server = self.settings.data["server"]
     self.screen = pygame.display.set_mode((self.resolution["screenwidth"], self.resolution["screenheight"]))
-
+    pygame.display.init()
     self.running = True
 
   def connect(self):
@@ -37,6 +37,7 @@ class Game:
         if not self.connected:
           self.connect()
           self.connected = True
+          self.colsize, self.rowsize = self.resolution["screenwidth"] / 8, self.resolution["screenheight"] / 8
         print("in game")
 
       if self.state == "settings":
@@ -45,11 +46,32 @@ class Game:
       pygame.display.flip()
       self.clock.tick(60)
 
+  def board(self, board):
+    ifself.state
+  
+  def boardlayouthandler(self, board):
+    if len(board) == 128:
+      parts = {}
+      for i in range(0,128,2):
+        parts[i // 2] = board[i:i+2]
+      allpieces = []
+      for keys, items in parts.items():
+        color = int(items[0])
+        piece = int(items[1])
+        if not (1 <= color <= 2 and 1 <= piece <= 6):
+          continue
+        position = keys
+        info = {"color":color,"piece":piece,"position":position}
+        allpieces.append(info)
+    else:
+      raise Exception("Invalid board length")
+    return allpieces
 
 class ChessFigure:
-  def __init__(self, type, position):
-    print(type, position)
-
+  def __init__(self, info):
+    info["color"], info["piece"], info["position"] = color, piece, position
+    row, col = position // 8, position % 8
+    x, y = col * self.colsize, row * self.rowsize
 
 class Button:
   def __init__(self):

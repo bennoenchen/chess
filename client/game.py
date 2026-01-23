@@ -10,18 +10,47 @@ class Game:
     self.bootup()
 
   def bootup(self):
-    data = self.settings.data
-    resolution = data["resolution"]
-    pygame.display.set_mode((resolution["screenwidth"],resolution["screenheight"]))
-    pygame.display.init()
+    self.resolution = self.settings.data["resolution"]
+    self.server = self.settings.data["server"]
+    self.screen = pygame.display.set_mode((self.resolution["screenwidth"], self.resolution["screenheight"]))
 
-    self.protocol.connect(data["server"])
+    self.running = True
+
+  def connect(self):
+    self.protocol.connect(self.server["server"])
     self.protocol.hello()
+    
+  def gameloop(self):
+    self.state = "menu"
+    self.connected = False
+    while self.running:
+      for event in pygame.event.get():
+        if event == pygame.QUIT():
+          self.running = False
+
+      if state == "menu":
+        print("main menu")
+        setting_button = Button(
+
+      if state == "game":
+        if not self.connected:
+          self.connect()
+          self.connected = True
+        print("in game")
+
+      if state == "settings":
+        print("settings menu")
+        
+      screen.flip()
+      clock.tick(60)
 
 
+class ChessFigure:
+  def __init__(self, type, position):
+    print(type, position)
 
-  def gamewindow(width, height):
-    pygame.display(width, height)
+class Button:
+  def __init__(self, 
 
 
 class Settings:

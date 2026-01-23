@@ -15,18 +15,21 @@ class Game:
     self.screen = pygame.display.set_mode((self.resolution["screenwidth"], self.resolution["screenheight"]))
     pygame.display.init()
     self.running = True
+    self.gameloop()
 
   def connect(self):
     self.protocol.connect(self.server)
     self.protocol.hello()
     
   def gameloop(self):
-    self.state = "menu"
+    self.state = "game"
     self.connected = False
     self.clock = pygame.time.Clock()
+    board = pygame.image.load("board.png").convert()
+    board = pygame.transform.scale(board, self.screen.get_size())
     while self.running:
       for event in pygame.event.get():
-        if event.type == pygame.QUIT():
+        if event.type == pygame.QUIT:
           self.running = False
 
       if self.state == "menu":
@@ -37,8 +40,8 @@ class Game:
         if not self.connected:
           self.connect()
           self.connected = True
-          self.colsize, self.rowsize = self.resolution["screenwidth"] / 8, self.resolution["screenheight"] / 8
-        print("in game")
+        self.colsize, self.rowsize = self.resolution["screenwidth"] / 8, self.resolution["screenheight"] / 8
+        self.screen.blit(board, (0,0))
 
       if self.state == "settings":
         print("settings menu")
@@ -47,7 +50,8 @@ class Game:
       self.clock.tick(60)
 
   def board(self, board):
-    ifself.state
+    if self.state == "game":
+      return
   
   def boardlayouthandler(self, board):
     if len(board) == 128:
@@ -69,9 +73,11 @@ class Game:
 
 class ChessFigure:
   def __init__(self, info):
-    info["color"], info["piece"], info["position"] = color, piece, position
+    color, piece, position = info["color"], info["piece"], info["position"]
     row, col = position // 8, position % 8
     x, y = col * self.colsize, row * self.rowsize
+
+    pygame.display.b
 
 class Button:
   def __init__(self):

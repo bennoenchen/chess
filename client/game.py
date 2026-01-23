@@ -14,6 +14,7 @@ class Game:
     self.server = self.settings.data["server"]
     self.screen = pygame.display.set_mode((self.resolution["screenwidth"], self.resolution["screenheight"]))
     pygame.display.init()
+    self.clock = pygame.time.Clock()
     self.running = True
     self.gameloop()
 
@@ -21,30 +22,53 @@ class Game:
     self.protocol.connect(self.server)
     self.protocol.hello()
     
+  def menuloop(self):
+    self.state = "main"
+    self.connected = False
+
+    play = pygame.image.load("play.png").convert()
+    options = pygame.image.load("options.png").convert()
+    play = pygame.transform.scale(play, self.screen.get_height() / 5)
+    options = pygame.transform.scale(options, self.screen.get_height() / 5)
+
+    while self.running:
+      for event in pygame.event.get():
+        if event.type == pygame.QUIT():
+          self.running = False
+      
+      pygame.display.flip()
+      self.clock.tick(60)
+  
+  def optionsloop(self):
+    self.state = "options"
+    self.connected = False
+
+    while self.running:
+      for event in pygame.event.get():
+        if event.type == pygame.QUIT():
+          self.running = False
+      
+      pygame.display.flip()
+      self.clock.tick(60)
+
   def gameloop(self):
     self.state = "game"
     self.connected = False
-    self.clock = pygame.time.Clock()
+    
     board = pygame.image.load("board.png").convert()
     board = pygame.transform.scale(board, self.screen.get_size())
+    
     while self.running:
       for event in pygame.event.get():
         if event.type == pygame.QUIT:
           self.running = False
 
-      if self.state == "menu":
-        print("main menu")
-        setting_button = Button()
-
-      if self.state == "game":
         if not self.connected:
           self.connect()
           self.connected = True
+        
         self.colsize, self.rowsize = self.resolution["screenwidth"] / 8, self.resolution["screenheight"] / 8
         self.screen.blit(board, (0,0))
-
-      if self.state == "settings":
-        print("settings menu")
         
       pygame.display.flip()
       self.clock.tick(60)
@@ -71,17 +95,14 @@ class Game:
       raise Exception("Invalid board length")
     return allpieces
 
+
 class ChessFigure:
   def __init__(self, info):
     color, piece, position = info["color"], info["piece"], info["position"]
     row, col = position // 8, position % 8
     x, y = col * self.colsize, row * self.rowsize
 
-    pygame.display.b
-
-class Button:
-  def __init__(self):
-    return
+    pygame.display.blit()
 
 
 class Settings:

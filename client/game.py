@@ -17,40 +17,43 @@ class Game:
     self.running = True
 
   def connect(self):
-    self.protocol.connect(self.server["server"])
+    self.protocol.connect(self.server)
     self.protocol.hello()
     
   def gameloop(self):
     self.state = "menu"
     self.connected = False
+    self.clock = pygame.time.Clock()
     while self.running:
       for event in pygame.event.get():
-        if event == pygame.QUIT():
+        if event.type == pygame.QUIT():
           self.running = False
 
-      if state == "menu":
+      if self.state == "menu":
         print("main menu")
-        setting_button = Button(
+        setting_button = Button()
 
-      if state == "game":
+      if self.state == "game":
         if not self.connected:
           self.connect()
           self.connected = True
         print("in game")
 
-      if state == "settings":
+      if self.state == "settings":
         print("settings menu")
         
-      screen.flip()
-      clock.tick(60)
+      pygame.display.flip()
+      self.clock.tick(60)
 
 
 class ChessFigure:
   def __init__(self, type, position):
     print(type, position)
 
+
 class Button:
-  def __init__(self, 
+  def __init__(self):
+    return
 
 
 class Settings:

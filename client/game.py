@@ -14,64 +14,94 @@ class Game:
     self.server = self.settings.data["server"]
     self.screen = pygame.display.set_mode((self.resolution["screenwidth"], self.resolution["screenheight"]))
     pygame.display.init()
+    pygame.display.set_caption('chess')
+    icon_image = pygame.image.load('icon.png')
+    pygame.display.set_icon(icon_image)
     self.clock = pygame.time.Clock()
     self.running = True
-    self.gameloop()
+    self.mainloop()
 
   def connect(self):
     self.protocol.connect(self.server)
     self.protocol.hello()
     
-  def menuloop(self):
-    self.state = "main"
+
+  def mainloop(self):
+    self.state = "menu"
     self.connected = False
+    self.state_change = True
 
-    play = pygame.image.load("play.png").convert()
-    options = pygame.image.load("options.png").convert()
-    play = pygame.transform.scale(play, self.screen.get_height() / 5)
-    options = pygame.transform.scale(options, self.screen.get_height() / 5)
-
-    while self.running:
-      for event in pygame.event.get():
-        if event.type == pygame.QUIT():
-          self.running = False
-      
-      pygame.display.flip()
-      self.clock.tick(60)
-  
-  def optionsloop(self):
-    self.state = "options"
-    self.connected = False
-
-    while self.running:
-      for event in pygame.event.get():
-        if event.type == pygame.QUIT():
-          self.running = False
-      
-      pygame.display.flip()
-      self.clock.tick(60)
-
-  def gameloop(self):
-    self.state = "game"
-    self.connected = False
-    
-    board = pygame.image.load("board.png").convert()
-    board = pygame.transform.scale(board, self.screen.get_size())
-    
     while self.running:
       for event in pygame.event.get():
         if event.type == pygame.QUIT:
           self.running = False
+        
+        if self.state == "menu":
+          if self.state_change == True:
+            self.screen.fill((0, 0, 0))
+            self.connected = False
+            background = pygame.image.load("background.jpg").convert()
+            background = pygame.transform.scale(background, self.screen.get_size())
+            play_img = pygame.image.load("play.png").convert_alpha()
+            options_img = pygame.image.load("options.png").convert_alpha()
+            button_size = self.screen.get_height() / 5
+            play_img = pygame.transform.scale(play_img, (button_size * 2, button_size))
+            options_img = pygame.transform.scale(options_img, (button_size * 2, button_size))
+            play_rect = play_img.get_rect()
+            options_rect = options_img.get_rect()
+            play_rect.center = (self.screen.get_width() / 2, self.screen.get_height() / 2 - 80)
+            options_rect.center = (self.screen.get_width() / 2, self.screen.get_height() / 2 + 80)
 
-        if not self.connected:
-          self.connect()
-          self.connected = True
-        
-        self.colsize, self.rowsize = self.resolution["screenwidth"] / 8, self.resolution["screenheight"] / 8
-        self.screen.blit(board, (0,0))
-        
+            self.state_change = False
+
+          if event.type == pygame.MOUSEBUTTONDOWN:
+            if play_rect.collidepoint(event.pos):
+              self.state = "game"
+              self.state_change = True
+
+            if options_rect.collidepoint(event.pos):
+              self.state = "options"
+              self.state_change = True
+          self.screen.blit(background, (0,0))
+          self.screen.blit(play_img, play_rect)
+          self.screen.blit(options_img, options_rect)
+
+        if self.state == "game":
+          if self.state_change == True:
+            self.screen.fill((0, 0, 0))
+            if not self.connected:
+              self.connect()
+              self.connected = True
+            board = pygame.image.load("board.png").convert()
+            board = pygame.transform.scale(board, self.screen.get_size())
+            self.colsize, self.rowsize = self.resolution["screenwidth"] / 8, self.resolution["screenheight"] / 8
+            self.state_change = False
+          self.screen.blit(board, (0,0))
+
+
+        if self.state == "options":
+          if self.state_change == True:
+            self.screen.fill((0, 0, 0))
+            background = pygame.image.load("background.jpg").convert()
+            background = pygame.transform.scale(background, self.screen.get_size())
+            back_img = pygame.image.load("back.png").convert_alpha()
+            button_size = self.screen.get_height() / 8
+            back_img = pygame.transform.scale(back_img, (button_size, button_size))
+            back_rect = back_img.get_rect()
+            back_rect.center = (self.screen.get_width() / 8, self.screen.get_height() / 8 * 7)
+            self.state_change = False
+
+          if event.type == pygame.MOUSEBUTTONDOWN:
+            if back_rect.collidepoint(event.pos):
+              self.state = "menu"
+              self.state_change = True
+          
+          self.screen.blit(background, (0,0))
+          self.screen.blit(back_img, back_rect)
+
       pygame.display.flip()
       self.clock.tick(60)
+
 
   def board(self, board):
     if self.state == "game":

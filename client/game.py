@@ -33,11 +33,13 @@ class Game:
     self.connected = False
     self.state_change = True
     self.menu_music_start = True
+    self.clr = None
 
     while self.running:
       for event in pygame.event.get():
         if event.type == pygame.QUIT:
           self.running = False
+          self.game_started = False
         
         if self.state == "menu":
           if self.state_change == True:
@@ -68,7 +70,7 @@ class Game:
           if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
               self.running = False
-              
+
           self.screen.blit(background, (0,0))
           self.screen.blit(play_img, play_rect)
           self.screen.blit(options_img, options_rect)
@@ -94,6 +96,7 @@ class Game:
               self.state = "menu"
               self.state_change = True
               self.menu_music_start = True
+              self.game_started = False
 
 
         if self.state == "options":
@@ -139,7 +142,7 @@ class Game:
     if self.state == "game":
       return
   
-  def boardlayouthandler(self, board):
+  def boardlayouthandler(self, board: str):
     if len(board) == 128:
       parts = {}
       for i in range(0,128,2):

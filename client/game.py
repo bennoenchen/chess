@@ -10,6 +10,7 @@ class Game:
     self.bootup()
 
   def bootup(self):
+    pygame.init()
     self.resolution = self.settings.data["resolution"]
     self.server = self.settings.data["server"]
     self.screen = pygame.display.set_mode((self.resolution["screenwidth"], self.resolution["screenheight"]))
@@ -17,6 +18,7 @@ class Game:
     pygame.display.set_caption('chess')
     icon_image = pygame.image.load('icon.png')
     pygame.display.set_icon(icon_image)
+    pygame.mixer.init()
     self.clock = pygame.time.Clock()
     self.running = True
     self.mainloop()
@@ -30,6 +32,7 @@ class Game:
     self.state = "menu"
     self.connected = False
     self.state_change = True
+    self.menu_music_start = True
 
     while self.running:
       for event in pygame.event.get():
@@ -49,8 +52,8 @@ class Game:
             options_img = pygame.transform.scale(options_img, (button_size * 2, button_size))
             play_rect = play_img.get_rect()
             options_rect = options_img.get_rect()
-            play_rect.center = (self.screen.get_width() / 2, self.screen.get_height() / 2 - 80)
-            options_rect.center = (self.screen.get_width() / 2, self.screen.get_height() / 2 + 80)
+            play_rect.center = (self.screen.get_width() / 2, self.screen.get_height() / 2 - 90)
+            options_rect.center = (self.screen.get_width() / 2, self.screen.get_height() / 2 + 90)
 
             self.state_change = False
 
@@ -58,10 +61,14 @@ class Game:
             if play_rect.collidepoint(event.pos):
               self.state = "game"
               self.state_change = True
-
             if options_rect.collidepoint(event.pos):
               self.state = "options"
               self.state_change = True
+
+          if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+              self.running = False
+              
           self.screen.blit(background, (0,0))
           self.screen.blit(play_img, play_rect)
           self.screen.blit(options_img, options_rect)
@@ -72,11 +79,21 @@ class Game:
             if not self.connected:
               self.connect()
               self.connected = True
+            pygame.mixer.stop()
+            pygame.mixer.music.load('game.mp3')
+            pygame.mixer.music.play(-1)
             board = pygame.image.load("board.png").convert()
             board = pygame.transform.scale(board, self.screen.get_size())
             self.colsize, self.rowsize = self.resolution["screenwidth"] / 8, self.resolution["screenheight"] / 8
             self.state_change = False
           self.screen.blit(board, (0,0))
+
+          if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+              self.connected = False
+              self.state = "menu"
+              self.state_change = True
+              self.menu_music_start = True
 
 
         if self.state == "options":
@@ -95,9 +112,24 @@ class Game:
             if back_rect.collidepoint(event.pos):
               self.state = "menu"
               self.state_change = True
+
+          if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+              self.connected = False
+              self.state = "menu"
+              self.state_change = True
           
           self.screen.blit(background, (0,0))
           self.screen.blit(back_img, back_rect)
+
+        if self.state == "menu" or self.state == "options":
+          if self.menu_music_start == True:
+            pygame.mixer.stop()
+            pygame.mixer.music.load('menu.mp3')
+            pygame.mixer.music.play(-1)
+            self.menu_music_start = False
+
+          
 
       pygame.display.flip()
       self.clock.tick(60)

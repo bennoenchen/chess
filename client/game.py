@@ -33,15 +33,19 @@ class Game:
     self.connected = False
     self.state_change = True
     self.menu_music_start = True
+    self.yourmove = False
     self.clr = None
+    self.pieces = []
 
     while self.running:
       for event in pygame.event.get():
+        #quitgame
         if event.type == pygame.QUIT:
           self.running = False
           self.game_started = False
-        
+        #menustate
         if self.state == "menu":
+          #statechange
           if self.state_change == True:
             self.screen.fill((0, 0, 0))
             self.connected = False
@@ -56,9 +60,8 @@ class Game:
             options_rect = options_img.get_rect()
             play_rect.center = (self.screen.get_width() / 2, self.screen.get_height() / 2 - 90)
             options_rect.center = (self.screen.get_width() / 2, self.screen.get_height() / 2 + 90)
-
             self.state_change = False
-
+          #game and options collider
           if event.type == pygame.MOUSEBUTTONDOWN:
             if play_rect.collidepoint(event.pos):
               self.state = "game"
@@ -66,16 +69,27 @@ class Game:
             if options_rect.collidepoint(event.pos):
               self.state = "options"
               self.state_change = True
-
+          #esc button
           if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
               self.running = False
-
+          #draw
           self.screen.blit(background, (0,0))
           self.screen.blit(play_img, play_rect)
           self.screen.blit(options_img, options_rect)
 
+        #gamestate
         if self.state == "game":
+          #esc button
+          if event.type == pygame.KEYDOWN:
+            #esc button
+            if event.key == pygame.K_ESCAPE:
+              self.connected = False
+              self.state = "menu"
+              self.state_change = True
+              self.menu_music_start = True
+              self.game_started = False
+          #state change
           if self.state_change == True:
             self.screen.fill((0, 0, 0))
             if not self.connected:
@@ -88,17 +102,23 @@ class Game:
             board = pygame.transform.scale(board, self.screen.get_size())
             self.colsize, self.rowsize = self.resolution["screenwidth"] / 8, self.resolution["screenheight"] / 8
             self.state_change = False
+          
+          #yourmove
+          if self.yourmove == True:
+            self.protocol.ok()
+
+
           self.screen.blit(board, (0,0))
+          for pcs in self.pieces:
+            color = pcs["color"]
+            piece = pcs["piece"]
+            position = pcs["position"]
+            x = position[0]
+            y = position[1]
+            
 
-          if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-              self.connected = False
-              self.state = "menu"
-              self.state_change = True
-              self.menu_music_start = True
-              self.game_started = False
 
-
+        #optionsstate
         if self.state == "options":
           if self.state_change == True:
             self.screen.fill((0, 0, 0))
@@ -124,41 +144,19 @@ class Game:
           
           self.screen.blit(background, (0,0))
           self.screen.blit(back_img, back_rect)
-
+        #menustate and optionsstate combined attr
         if self.state == "menu" or self.state == "options":
+          #play menu and options music
           if self.menu_music_start == True:
             pygame.mixer.stop()
             pygame.mixer.music.load('menu.mp3')
             pygame.mixer.music.play(-1)
             self.menu_music_start = False
 
-          
-
       pygame.display.flip()
       self.clock.tick(60)
-
-
-  def board(self, board):
-    if self.state == "game":
-      return
   
-  def boardlayouthandler(self, board: str):
-    if len(board) == 128:
-      parts = {}
-      for i in range(0,128,2):
-        parts[i // 2] = board[i:i+2]
-      allpieces = []
-      for keys, items in parts.items():
-        color = int(items[0])
-        piece = int(items[1])
-        if not (1 <= color <= 2 and 1 <= piece <= 6):
-          continue
-        position = keys
-        info = {"color":color,"piece":piece,"position":position}
-        allpieces.append(info)
-    else:
-      raise Exception("Invalid board length")
-    return allpieces
+  
 
 
 class ChessFigure:

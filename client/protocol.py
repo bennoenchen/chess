@@ -16,21 +16,42 @@ class ProtocolHandler:
   def on_message(self, msg: str):
     print("PH: " + msg)
     split = msg.split()
-    if len(split) > 3:
+    if len(split) >= 3:
       print("PH: Message too long")
-    if split[0] == "ROLE":
-      if split[1] == "WHITE":
+    cmd, dat = split[0], split[1]
+    if cmd == "ROLE":
+      if dat == "WHITE":
         self.game.color = 1
-      elif split[1] == "BLACK":
+      elif dat == "BLACK":
         self.game.color = 2
       else: raise Exception("INVALID COLOR FROM SERVER")
-    elif split[0] == "STARTGAME":
+    elif cmd == "STARTGAME":
       self.game.startgame
+    elif cmd == "YOURMOVE":
+      self.game.yourmove = True
+    elif cmd == "BOARD":
+      pieces = self.boardlayouthandler(split[1])
+      self.game.pieces = pieces
+      
 
-    
-
-
-
+  def boardlayouthandler(self, board: str):
+    if len(board) == 128:
+      parts = {}
+      for i in range(0,128,2):
+        parts[i // 2] = board[i:i+2]
+      allpieces = []
+      for keys, items in parts.items():
+        color = int(items[0])
+        piece = int(items[1])
+        if not (1 <= color <= 2 and 1 <= piece <= 6):
+          continue
+        #MAKE IT SO THAT PIECES IS [x,y]
+        position = keys
+        info = {"color":color,"piece":piece,"position":position}
+        allpieces.append(info)
+    else:
+      raise Exception("Invalid board length")
+    return allpieces
 
   def ok(self):
     self.net.send("OK\n")
